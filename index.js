@@ -1,11 +1,16 @@
+const { replies, getUV } = require("./helpers/middlewares");
 const { Telegraf } = require("telegraf");
-const fetch = require("node-fetch");
 
 const bot = new Telegraf("5555556848:AAFWejEC65nbTJNed4xFBwSmFwCVWN6R3eI");
 
 bot.start((ctx) => {
   ctx.reply(
-    "Welcome! Send me your location so I could tell you what UV id right now :^)"
+    "Привет! " +
+      "Я проверяю ультрофиолетовый индекс, что бы вы решали, " +
+      "стоит ли идти жарится на солнце и болеть раком или лучше посмотреть нетфликс с подружкой. " +
+      "Пришлите мне свою локацию, а я скажу шо там на улице. " +
+      "Если не буду чудить, то буду проверять индекс каждый час и, если он изменится, конечно сообщу. " +
+      "В любом случае, вы всегда можете проверить это ручками, прислав повторно мне свою гео-точку:^)"
   );
 });
 
@@ -15,41 +20,44 @@ bot.on("location", (ctx) => {
   let lastUV;
   getUV(lat, lon)
     .then((res) => {
+      let currentUV = res.current.uv;
       {
-        lastUV = res.current.uv;
-        ctx.reply(`UV index in ${res.location.name} is ${res.current.uv} :)`);
+        lastUV = currentUV;
+        ctx.reply(`УФ индекс в ${res.location.name} равен ${currentUV}.`);
+
+        setTimeout(() => {
+          replies(ctx, currentUV);
+        }, 2000);
       }
     })
     .catch((err) => {
       console.log("error: ", err);
-      ctx.reply(`Wrong request`);
+      ctx.reply(`Что-то пошло не по плану, сори..`);
+      ctx.reply(`Попробуйте еще`);
     });
 
   setInterval(() => {
     getUV(lat, lon)
       .then((res) => {
-        if (lastUV !== res.current.uv) {
+        let currentUV = res.current.uv;
+        if (currentUV !== lastUV) {
           ctx.reply(
-            `UV index in ${res.location.name} is changed to ${res.current.uv} :)`
+            `УФ индекс изменился в ${res.location.name} до ${currentUV}.`
           );
-          lastUV = res.current.uv;
+
+          setTimeout(() => {
+            replies(ctx, currentUV);
+          }, 2000);
+
+          lastUV = currentUV;
         } else {
-          return;
+          console.log("index didnt change");
         }
       })
       .catch((err) => {
         console.log("error: ", err);
-        ctx.reply(`Wrong request`);
       });
-  }, 1000 * 60 * 60);
+  }, 1000 * 60 * 30);
 });
-
-const getUV = async (lat, lon) => {
-  const api = `http://api.weatherapi.com/v1/current.json?key=2c8a38ef924049e4bc5182111221807&q=${lat},${lon}`;
-  const res = await fetch(api);
-  const data = await res.json();
-  console.log(data);
-  return data;
-};
 
 bot.launch();
