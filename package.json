@@ -10,6 +10,7 @@
   "author": "Ihar Tratsiuk",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.0.1",
     "node-fetch": "^2.6.7",
     "telegraf": "^4.8.5"
   },

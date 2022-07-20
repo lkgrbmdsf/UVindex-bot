@@ -1,8 +1,18 @@
 const fetch = require("node-fetch");
+require("dotenv").config();
 
-const getUV = async (lat, lon) => {
-  const api = `http://api.weatherapi.com/v1/current.json?key=2c8a38ef924049e4bc5182111221807&q=${lat},${lon}`;
+const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
+
+const getUVbyLocation = async (lat, lon) => {
+  const api = `http://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${lat},${lon}`;
   const res = await fetch(api);
+  const data = await res.json();
+  return data;
+};
+
+const getUVByTownName = async (town) => {
+  const api = `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${town}`;
+  res = await fetch(api);
   const data = await res.json();
   return data;
 };
@@ -26,6 +36,7 @@ const replies = (ctx, index) => {
 };
 
 module.exports = {
-  getUV: getUV,
+  getUVbyLocation: getUVbyLocation,
+  getUVByTownName: getUVByTownName,
   replies: replies,
 };
